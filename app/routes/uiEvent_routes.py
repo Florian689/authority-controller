@@ -12,7 +12,7 @@ router = APIRouter()
 @router.get('/generate-invitation')
 async def generate_invitation(response: FastAPIResponse):
     async with httpx.AsyncClient() as client:
-        httpx_response = await client.post('http://host.docker.internal:8023/connections/create-invitation')
+        httpx_response = await client.post('http://172.17.0.1:8021/connections/create-invitation')
         
         # Ensure the httpx response is successful before proceeding
         if httpx_response.status_code != 200:

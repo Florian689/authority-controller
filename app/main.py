@@ -2,6 +2,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 from .routes import home_routes, uiEvent_routes, webhook_routes, websocket_routes
+from .modules.agent_startup import initialize_schema_and_def
 
 app = FastAPI()
 
@@ -23,3 +24,7 @@ app.include_router(uiEvent_routes.router, prefix="/ui-event")
 app.include_router(webhook_routes.router, prefix="/webhook")
 app.include_router(home_routes.router, prefix="")
 app.include_router(websocket_routes.router)
+
+@app.on_event("startup")
+async def startup_event():
+    await initialize_schema_and_def()

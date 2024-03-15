@@ -1,38 +1,11 @@
 import httpx
 import re
 import json
-
-async def get_issuer_did(client):
-    try:
-        response = await client.get('http://host.docker.internal:8023/wallet/did/public')
-        response.raise_for_status()
-        data = response.json()
-        did = f"{data['result']['did']}"
-        return did
-    except httpx.HTTPError as err:
-        print(f"Error fetching issuer DID: {err}")
-        return None
-
-async def get_cred_def_id(client, did):
-    try:
-        response = await client.get('http://host.docker.internal:8023/credential-definitions/created')
-        response.raise_for_status()
-        data = response.json()
-        # Filter and sort the definitions
-        filtered = [cred_def for cred_def in data['credential_definition_ids'] if cred_def.startswith(did) and cred_def.endswith('Wahlschein')]
-        if not filtered:
-            return None
-        # Extract version numbers and sort
-        def extract_version(cred_def_id):
-            return int(re.search(r":(\d+):", cred_def_id).group(1))
-        return sorted(filtered, key=extract_version, reverse=True)[0]
-    except httpx.HTTPError as err:
-        print(f"Error fetching credential definition ID: {err}")
-        return None
+from .agent_startup import get_issuer_did, get_cred_def_id
 
 async def get_schema_info(client, did):
     try:
-        response = await client.get('http://host.docker.internal:8023/schemas/created')
+        response = await client.get('http://172.17.0.1:8021/schemas/created')
         response.raise_for_status()
         data = response.json()
         # Filter and sort the schemas
@@ -52,11 +25,11 @@ async def get_schema_info(client, did):
 
 async def send_credential_offer_v2(connection_id):
     async with httpx.AsyncClient() as client:
-        issuer_did = await get_issuer_did(client)
+        issuer_did = get_issuer_did()
         if not issuer_did:
             return False, "issuer_did hat den Wert None"
 
-        cred_def_id = await get_cred_def_id(client, issuer_did)
+        cred_def_id = get_cred_def_id()
 
         if not cred_def_id:
             return False, "cred_def_id hat den Wert None"
@@ -93,7 +66,7 @@ async def send_credential_offer_v2(connection_id):
         json_data = json.dumps(post_body)
 
         try:
-            response = await client.post('http://host.docker.internal:8023/issue-credential-2.0/send-offer', data=json_data, headers={'accept': 'application/json', 'Content-Type': 'application/json'})
+            response = await client.post('http://172.17.0.1:8021/issue-credential-2.0/send-offer', data=json_data, headers={'accept': 'application/json', 'Content-Type': 'application/json'})
             response.raise_for_status()
             if response.json().get('state') == 'offer-sent':
                 print("Offer successfully sent.")
@@ -105,18 +78,18 @@ async def send_credential_offer_v2(connection_id):
 
 async def send_credential_offer(connection_id):
     async with httpx.AsyncClient() as client:
-        issuer_did = await get_issuer_did(client)
+        issuer_did = get_issuer_did()
         if not issuer_did:
             return False, "issuer_did hat den Wert None"
 
-        cred_def_id = await get_cred_def_id(client, issuer_did)
+        cred_def_id = get_cred_def_id()
 
         if not cred_def_id:
             return False, "cred_def_id hat den Wert None"
 
-        schema_id, schema_version = await get_schema_info(client, issuer_did)
-        if not schema_id or not schema_version:
-            return False, "schema_id und/oder schema_version hat den Wert None"
+        #schema_id, schema_version = await get_schema_info(client, issuer_did)
+        #if not schema_id or not schema_version:
+        #    return False, "schema_id und/oder schema_version hat den Wert None"
 
         post_body = {
             "auto_issue": True,
@@ -128,7 +101,7 @@ async def send_credential_offer(connection_id):
                 "@type": "issue-credential/1.0/credential-preview",
                 "attributes": [
                     {"name": "wahlkreis", "value": "12345"},
-                    {"name": "id", "value": "6789"}
+                    {"name": "polling_card_token", "value": "6789"}
                 ]
             },
             "trace": True
@@ -137,7 +110,7 @@ async def send_credential_offer(connection_id):
         json_data = json.dumps(post_body)
 
         try:
-            response = await client.post('http://host.docker.internal:8023/issue-credential/send-offer', data=json_data, headers={'accept': 'application/json', 'Content-Type': 'application/json'})
+            response = await client.post('http://172.17.0.1:8021/issue-credential/send-offer', data=json_data, headers={'accept': 'application/json', 'Content-Type': 'application/json'})
             response.raise_for_status()
             if response.json().get('state') == 'offer-sent':
                 print("Offer successfully sent.")
@@ -150,7 +123,7 @@ async def send_credential_offer(connection_id):
 #Issue Credential if '--no-auto' is set
 async def issue_credential(cred_ex_id):
     async with httpx.AsyncClient() as client:
-        http_url = f"http://host.docker.internal:8023/issue-credential-2.0/records/{cred_ex_id}/issue"
+        http_url = f"http://172.17.0.1:8021/issue-credential-2.0/records/{cred_ex_id}/issue"
         body_content = {}
         try:
             response = await client.post(http_url, json=body_content, headers={'accept': 'application/json', 'Content-Type': 'application/json'})

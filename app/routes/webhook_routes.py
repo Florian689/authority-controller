@@ -13,7 +13,7 @@ async def webhook_topic_connections(request: Request):
     if data.get('state') == 'request':
         connection_id = data.get('connection_id')
         if connection_id:
-            url = f'http://host.docker.internal:8023/connections/{connection_id}/accept-request'
+            url = f'http://172.17.0.1:8021/connections/{connection_id}/accept-request'
             async with httpx.AsyncClient() as client:
                 response = await client.post(url, json={})
                 if response.status_code == 200:
