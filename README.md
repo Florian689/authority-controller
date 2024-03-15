@@ -1,22 +1,16 @@
+The following software must be installed on your machine:
+    - Docker and Docker-compose
+    - Ngrok
+    - JQ
 
-### Steps to Run the Application
-1. **Start the AcaPy Authority Agent** on your server by executing `./run_demo authority --events --no-auto` from the demo directory in the AcaPy folder
-2. **Build the Docker image** from the project root folder by running `docker-compose up --build`
-3. **Open the HTML file** in a web browser to access the frontend.
+1. **Start ngrok** from a new terminal running `ngrok http 8021`
 
-### Additional information for developing
-- **Updating Virtual Python Environment**: run `pip freeze > requirements.txt`-> ist das noch notwendig? Wie update ich meinen Dockerfile?
+2. **Register DID** on the BCLedger at `http://test.bcovrin.vonx.io/` using a 32bit wallet seed. Remember your seed, we need it to start the AcaPy agent.
 
-### Additional Considerations for FastAPI
-- **Asynchronous Programming**: Embrace asynchronous programming for handling network IO. This can lead to better performance, especially under high load, which is crucial for your use case.
-- **Error Handling**: Implement error handling in your FastAPI application. FastAPI has built-in support for request validation, error handling, etc.
-- **Testing**: FastAPI simplifies testing your application. Use FastAPI's test client to write tests for your application.
-- **Security**: Ensure the security of your application. FastAPI provides several tools and plugins for security, such as OAuth2 with Password (and hashing), JWT tokens, etc.
-- **Deployment**: When deploying your FastAPI application, you'll need an ASGI server such as Uvicorn or Hypercorn. Also, consider using Docker for consistent and isolated environments.
+3. **Start AcaPy Agent** from the auries-cloudagent-python root directory running the following command (Exchange <ngrok_endpoint> with the endpoint shown in the ngrok terminal (e.g.: `https://7f7c-34-16-203-117.ngrok-free.app`) and the <seed> with the 32bit-seed that you registered on the ledger):
 
-### Final Steps
-- Thoroughly test your FastAPI application to handle various scenarios and loads.
-- Use FastAPI's automatic documentation (available at `/docs` or `/redoc` URL paths) to test and document your API endpoints.
-- Keep iterating based on feedback and testing.
+    `PORTS="8020:8020 8021:8021" EVENTS=1 scripts/run_docker start --endpoint <ngrok_endpoint> --label authority.agent --auto-ping-connection --auto-respond-messages --inbound-transport http 0.0.0.0 8020 --outbound-transport http --admin 0.0.0.0 8021 --admin-insecure-mode --genesis-url http://test.bcovrin.vonx.io/genesis --wallet-type askar --wallet-name authority.agent744140 --wallet-key authority.agent744140 --preserve-exchange-record --auto-provision --public-invites --seed <seeed> --webhook-url http://172.17.0.1:8000/webhook --monitor-revocation-notification --trace-target log --trace-tag acapy.events --trace-label authority.agent.trace --auto-accept-invites --auto-accept-requests --auto-store-credential`
 
-By following these steps, you can leverage FastAPI's performance benefits and asynchronous capabilities for your project. Remember, the success of your application depends not only on the chosen technology but also on good design, thorough testing, and continuous iteration based on user feedback.
+4. **Build and start Authority Controller** from the authority_controller root directory running `docker-compose up --build` on Mac or `docker compose up --build` on Linux
+
+5. **Start Registration Process** by visiting `http://localhost:8000` in your browser.
