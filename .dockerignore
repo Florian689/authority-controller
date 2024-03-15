@@ -1,0 +1,18 @@
+# OS generated files
+.DS_Store
+
+# Python bytecode
+__pycache__
+**/__pycache__
+*.pyc
+*.pyo
+
+# Git directory
+.git
+
+# Docker-related files
+Dockerfile
+docker-compose.yml
+
+# Markdown and documentation
+README.md

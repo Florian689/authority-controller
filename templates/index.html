@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Wählerregistrierung</title>
+    <script src="/static/qrcode.min.js"></script>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css">
+    <link rel="icon" type="image/x-icon" href="/static/images/favicon.ico">
+    <style>
+        .container {
+            padding-top: 20px;
+        }
+        #qrCodeDisplay {
+            text-align: center;
+            padding: 20px;
+        }
+        .hidden {
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <nav class="navbar navbar-light bg-light">
+        <span class="navbar-brand mb-0 h1">Wählerregistrierung</span>
+    </nav>
+
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-md-6 text-center">
+                <button id="generateInvitationButton" class="btn btn-primary my-3">Connect to Authority</button>
+                <div id="qrCodeDisplay" class="hidden"></div>
+
+                <div id="startEIdProcess" class="hidden">
+                    <p>Die Verbindung zu Ihrem Wallet wurde hergestellt.</p>
+                    <!--<button class="btn btn-secondary">eID Service starten</button>-->
+                    <button class="btn btn-primary my-3">eID Service starten</button>
+                </div>
+
+                <div id="eIDMessage" class="my-3"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Link to the external JavaScript file -->
+    <script src="/static/script.js"></script>
+</body>
+</html>
